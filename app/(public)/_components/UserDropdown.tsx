@@ -1,6 +1,4 @@
 import Link from "next/link";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import {
   BookOpenIcon,
   ChevronDownIcon,
@@ -9,7 +7,6 @@ import {
   LogOutIcon,
 } from "lucide-react";
 
-import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -22,36 +19,31 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+import { useSignOut } from "@/hooks/use-signout";
+
 interface iAppProps {
-  name: string;
+  name?: string;
   email: string;
-  image: string;
+  image?: string;
 }
 
 export function UserDropdown({ name, email, image }: iAppProps) {
-  const router = useRouter();
-
-  async function signOut() {
-    await authClient.signOut({
-      fetchOptions: {
-        onSuccess: () => {
-          router.push("/");
-          toast.success("Signed out succesfully");
-        },
-        onError: (error) => {
-          toast.error("Failed to sign out " + error.error.message);
-        },
-      },
-    });
-  }
+  const handleSignOut = useSignOut();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
           <Avatar>
-            <AvatarImage src={image} alt="Profile image" />
-            <AvatarFallback>{name[0].toUpperCase()}</AvatarFallback>
+            <AvatarImage
+              src={image ?? `https://avatar.vercel.sh/${email}`}
+              alt="Profile image"
+            />
+            <AvatarFallback className="rounded-lg">
+              {name && name.length > 0
+                ? name.charAt(0).toUpperCase()
+                : email.charAt(0).toUpperCase()}
+            </AvatarFallback>
           </Avatar>
           <ChevronDownIcon
             size={16}
@@ -63,7 +55,7 @@ export function UserDropdown({ name, email, image }: iAppProps) {
       <DropdownMenuContent align="end" className="max-w-64">
         <DropdownMenuLabel className="flex min-w-0 flex-col">
           <span className="text-foreground truncate text-sm font-medium">
-            {name}
+            {name && name.length > 0 ? name : email.split("@")[0]}
           </span>
           <span className="text-muted-foreground truncate text-xs font-normal">
             {email}
@@ -99,7 +91,7 @@ export function UserDropdown({ name, email, image }: iAppProps) {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={signOut}>
+        <DropdownMenuItem onClick={handleSignOut}>
           <LogOutIcon size={16} className="opacity-60" aria-hidden="true" />
           <span>Logout</span>
         </DropdownMenuItem>

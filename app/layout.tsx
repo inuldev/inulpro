@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "InulPRO",
-  description: "InulPRO is a platform for learning management system.",
+  description: "InulPRO is a platform for online education.",
 };
 
 export default function RootLayout({
