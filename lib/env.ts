@@ -8,6 +8,7 @@ export const env = createEnv({
     BETTER_AUTH_URL: z.url(),
     AUTH_GITHUB_CLIENT_ID: z.string().min(1),
     AUTH_GITHUB_SECRET: z.string().min(1),
+    ARCJET_KEY: z.string().min(1),
     // Email server configuration
     EMAIL_SERVER_HOST: z.string().min(1),
     EMAIL_SERVER_PORT: z.string().default("465"),
