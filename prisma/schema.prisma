@@ -18,6 +18,7 @@ model User {
   updatedAt     DateTime
   sessions      Session[]
   accounts      Account[]
+  courses       Course[]
 
   @@unique([email])
   @@map("user")
@@ -66,4 +67,35 @@ model Verification {
   updatedAt  DateTime?
 
   @@map("verification")
+}
+
+enum CourseLevel {
+  Beginner
+  Intermediate
+  Advanced
+}
+
+enum CourseStatus {
+  Draft
+  Published
+  Archived
+}
+
+model Course {
+  id               String       @id @default(uuid())
+  title            String
+  smallDescription String
+  description      String
+  fileKey          String
+  price            Int
+  duration         Int
+  category         String
+  slug             String       @unique
+  level            CourseLevel  @default(Beginner)
+  status           CourseStatus @default(Draft)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
 }
