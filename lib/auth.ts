@@ -6,7 +6,7 @@ import { env } from "./env";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
-    provider: "postgresql", // or "mysql" or "sqlite"
+    provider: "postgresql", // or "mysql" or "sqlite",
   }),
   socialProviders: {
     github: {
