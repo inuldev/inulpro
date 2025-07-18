@@ -23,6 +23,23 @@ export async function adminGetCourse(id: string) {
       slug: true,
       smallDescription: true,
       category: true,
+      chapters: {
+        select: {
+          id: true,
+          title: true,
+          position: true,
+          lessons: {
+            select: {
+              id: true,
+              title: true,
+              description: true,
+              thumbnailKey: true,
+              videoKey: true,
+              position: true,
+            },
+          },
+        },
+      },
     },
   });
 
