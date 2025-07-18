@@ -10,6 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Loader2, PlusIcon, SparkleIcon } from "lucide-react";
 
 import { tryCatch } from "@/hooks/try-catch";
+import { useConfetti } from "@/hooks/use-confetti";
 import { Uploader } from "@/components/file-uploader/Uploader";
 import { RichTextEditor } from "@/components/rich-text-editor/Editor";
 import {
@@ -50,6 +51,7 @@ import { CreateCourse } from "./actions";
 
 export default function CourseCreationPage() {
   const router = useRouter();
+  const triggerConfetti = useConfetti();
   const [pending, startTransition] = useTransition();
 
   const form = useForm<CourseSchemaType>({
@@ -79,6 +81,7 @@ export default function CourseCreationPage() {
 
       if (result.status === "success") {
         toast.success(result.message);
+        triggerConfetti();
         form.reset();
         router.push("/admin/courses");
       } else if (result.status === "error") {

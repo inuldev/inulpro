@@ -13,6 +13,7 @@ import {
 import { getS3PublicUrl } from "@/lib/s3-utils";
 import { AdminCourseType } from "@/app/data/admin/admin-get-courses";
 
+import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { buttonVariants, Button } from "@/components/ui/button";
 import {
@@ -78,7 +79,7 @@ export function AdminCourseCard({ data }: iAppProps) {
         >
           {data.title}
         </Link>
-        <p className="text-sm text-muted-foreground line-clamp-2 leading-tight mt-2">
+        <p className="text-sm text-muted-foreground line-clamp-2 leading-tight">
           {data.smallDescription}
         </p>
 
@@ -101,6 +102,36 @@ export function AdminCourseCard({ data }: iAppProps) {
         >
           Edit Course <ArrowRight className="size-4" />
         </Link>
+      </CardContent>
+    </Card>
+  );
+}
+
+export function AdminCourseCardSkeleton() {
+  return (
+    <Card className="group relative py-0 gap-0 transition-transform duration-300 ease-in-out">
+      <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
+        <Skeleton className="h-6 w-16 rounded-full" />
+        <Skeleton className="size-8 rounded-md" />
+      </div>
+      <div className="w-full relative h-fit">
+        <Skeleton className="w-full rounded-t-lg aspect-video h-[250px] object-cover" />
+      </div>
+      <CardContent className="p-4">
+        <Skeleton className="h-6 w-3/4 mb-2 rounded" />
+        <Skeleton className="h-4 w-full mb-4 rounded" />
+        <div className="mt-4 flex items-center gap-x-5">
+          <div className="flex items-center gap-x-2">
+            <Skeleton className="size-6 rounded-md" />
+            <Skeleton className="h-4 w-10 rounded" />
+          </div>
+          <div className="flex items-center gap-x-2">
+            <Skeleton className="size-6 rounded-md" />
+            <Skeleton className="h-4 w-10 rounded" />
+          </div>
+        </div>
+
+        <Skeleton className="h-10 w-full mt-4 rounded" />
       </CardContent>
     </Card>
   );
