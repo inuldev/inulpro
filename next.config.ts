@@ -11,20 +11,19 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // Konfigurasi Turbopack (stable)
-  turbopack: {
-    // Optimasi resolving
-    resolveAlias: {
-      // Cache resolving untuk performa lebih baik
-    },
-  },
-
   // Optimasi output
   output: "standalone",
 
   // Optimasi images
   images: {
     formats: ["image/webp", "image/avif"],
+    remotePatterns: [
+      {
+        port: "",
+        protocol: "https",
+        hostname: "inulpro.fly.storage.tigris.dev",
+      },
+    ],
   },
 };
 

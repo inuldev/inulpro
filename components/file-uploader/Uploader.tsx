@@ -43,6 +43,7 @@ export function Uploader({ value, onChange }: iAppProps) {
     isDeleting: false,
     fileType: "image",
     key: value,
+    objectUrl: undefined, // Don't set initial objectUrl, let useEffect handle it
   });
 
   async function uploadFile(file: File) {
@@ -151,7 +152,6 @@ export function Uploader({ value, onChange }: iAppProps) {
         uploadFile(file);
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [fileState.objectUrl]
   );
 
@@ -290,7 +290,7 @@ export function Uploader({ value, onChange }: iAppProps) {
         URL.revokeObjectURL(fileState.objectUrl);
       }
     };
-  }, [fileState.objectUrl]);
+  }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -306,7 +306,7 @@ export function Uploader({ value, onChange }: iAppProps) {
     <Card
       {...getRootProps()}
       className={cn(
-        "relative border-2 border-dashed transition-colors duration-200 ease-in-out w-full h-64",
+        "relative border-2 border-dashed transition-colors duration-200 ease-in-out w-full h-48",
         isDragActive
           ? "border-primary bg-primary/10 border-solid"
           : "border-border hover:border-primary"
