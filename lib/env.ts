@@ -9,6 +9,8 @@ export const env = createEnv({
     AUTH_GITHUB_CLIENT_ID: z.string().min(1),
     AUTH_GITHUB_SECRET: z.string().min(1),
     ARCJET_KEY: z.string().min(1),
+    STRIPE_SECRET_KEY: z.string().min(1),
+    STRIPE_WEBHOOK_SECRET: z.string().min(1),
 
     // Email server configuration
     EMAIL_SERVER_HOST: z.string().min(1),
