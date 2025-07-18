@@ -1,19 +1,45 @@
 "use server";
 
-import { headers } from "next/headers";
+import { request } from "@arcjet/next";
 
 import prisma from "@/lib/db";
-import { auth } from "@/lib/auth";
 import { ApiResponse } from "@/lib/types";
+import arcjet, { detectBot, fixedWindow } from "@/lib/arcjet";
 import { courseSchema, CourseSchemaType } from "@/lib/zodSchemas";
+
+import { requireAdmin } from "@/app/data/admin/require-admin";
+
+const aj = arcjet
+  .withRule(
+    detectBot({
+      mode: "LIVE",
+      allow: [],
+    })
+  )
+  .withRule(
+    fixedWindow({
+      mode: "LIVE",
+      window: "1m",
+      max: 5,
+    })
+  );
 
 export async function CreateCourse(
   values: CourseSchemaType
 ): Promise<ApiResponse> {
+  const session = await requireAdmin();
+
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const req = await request();
+    const decision = await aj.protect(req, { fingerprint: session.user.id });
+
+    if (decision.isDenied()) {
+      if (decision.reason.isRateLimit()) {
+        return { status: "error", message: "You have been rate limited." };
+      } else {
+        return { status: "error", message: "Looks like you are a bot." };
+      }
+    }
 
     const validation = courseSchema.safeParse(values);
 
