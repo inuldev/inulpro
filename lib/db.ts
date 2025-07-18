@@ -1,3 +1,4 @@
+import "server-only";
 import { withAccelerate } from "@prisma/extension-accelerate";
 
 import { PrismaClient } from "./generated/prisma";

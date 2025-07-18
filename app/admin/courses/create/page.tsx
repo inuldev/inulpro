@@ -6,7 +6,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, PlusIcon, SparkleIcon } from "lucide-react";
 
-import { RichTextEditor } from "@/components/rich-text-editor/Editor";
 import {
   courseCategories,
   courseLevels,
@@ -40,6 +39,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+
+import { Uploader } from "@/components/file-uploader/Uploader";
+import { RichTextEditor } from "@/components/rich-text-editor/Editor";
 
 export default function CourseCreationPage() {
   const form = useForm<CourseSchemaType>({
@@ -170,7 +172,7 @@ export default function CourseCreationPage() {
                   <FormItem className="w-full">
                     <FormLabel>Thumbnail image</FormLabel>
                     <FormControl>
-                      <Input placeholder="thumbnail url" {...field} />
+                      <Uploader />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
