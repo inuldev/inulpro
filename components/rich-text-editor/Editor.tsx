@@ -7,8 +7,8 @@ import { EditorContent, useEditor } from "@tiptap/react";
 import { Menubar } from "./Menubar";
 
 interface FieldProps {
-  onChange: (value: string) => void;
-  value: string;
+  onChange: (value: string | undefined) => void;
+  value?: string;
 }
 
 export function RichTextEditor({ field }: { field: FieldProps }) {
