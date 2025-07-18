@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, PlusIcon, SparkleIcon } from "lucide-react";
 
+import { RichTextEditor } from "@/components/rich-text-editor/Editor";
 import {
   courseCategories,
   courseLevels,
@@ -155,11 +156,7 @@ export default function CourseCreationPage() {
                   <FormItem className="w-full">
                     <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <Textarea
-                        placeholder="Description"
-                        className="min-h-[120px]"
-                        {...field}
-                      />
+                      <RichTextEditor field={field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
