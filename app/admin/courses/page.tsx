@@ -11,13 +11,13 @@ import {
   AdminCourseCardSkeleton,
 } from "./_components/AdminCourseCard";
 
-export default function CoursesPage() {
+export default async function CoursesPage() {
   return (
     <>
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Your Courses</h1>
         <Link className={buttonVariants()} href="/admin/courses/create">
-          <PlusIcon className="size-4 mr-2" /> Create Course
+          <PlusIcon className="size-4" /> Create Course
         </Link>
       </div>
 
@@ -40,7 +40,7 @@ async function RenderCourses() {
           icon={<BanIcon className="size-10 text-primary" />}
           buttonText="Create Course"
           buttonHref="/admin/courses/create"
-          buttonIcon={<PlusIcon className="size-4 mr-2" />}
+          buttonIcon={<PlusIcon className="size-4" />}
         />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-7">

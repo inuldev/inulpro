@@ -6,6 +6,7 @@ import { requireAdmin } from "./require-admin";
 
 export async function adminGetCourse(id: string) {
   await requireAdmin();
+  await new Promise((resolve) => setTimeout(resolve, 1000));
 
   const data = await prisma.course.findUnique({
     where: {

@@ -7,8 +7,8 @@ import { FileRejection, useDropzone } from "react-dropzone";
 
 import { cn } from "@/lib/utils";
 import { getS3PublicUrl, isS3Key } from "@/lib/s3-utils";
+import { Card, CardContent } from "@/components/ui/card";
 
-import { Card, CardContent } from "../ui/card";
 import {
   RenderEmptyState,
   RenderErrorState,
