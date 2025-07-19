@@ -2,7 +2,7 @@
 
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { useState, useTransition } from "react";
+import { Suspense, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { authClient } from "@/lib/auth-client";
@@ -20,7 +20,15 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 
-export default function VerifyRequest() {
+export default function VerifyRequestRoute() {
+  return (
+    <Suspense>
+      <VerifyRequest />
+    </Suspense>
+  );
+}
+
+function VerifyRequest() {
   const router = useRouter();
   const [otp, setOtp] = useState("");
   const [emailPending, startTransition] = useTransition();
