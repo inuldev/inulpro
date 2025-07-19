@@ -1,165 +1,174 @@
-// Simple in-memory rate limiting for OTP requests
-// In production, consider using Redis or database-based solution
+// Optimized rate limiting using Arcjet + custom OTP logic
+// Arcjet handles general rate limiting, custom logic for OTP-specific features
 
-interface RateLimitEntry {
-  count: number;
-  resetTime: number;
+import arcjet, { slidingWindow, type ArcjetDecision } from "@arcjet/next";
+import { env } from "./env";
+
+interface OTPEntry {
   lastRequest: number;
+  attempts: number;
 }
 
-class RateLimiter {
-  private store = new Map<string, RateLimitEntry>();
-  private readonly maxRequests: number;
-  private readonly windowMs: number;
+// Arcjet instance for OTP rate limiting
+const otpArcjet = arcjet({
+  key: env.ARCJET_KEY,
+  characteristics: ["email"],
+  rules: [
+    slidingWindow({
+      mode: "LIVE",
+      interval: "15m", // 15 minutes window
+      max: 5, // Max 5 OTP requests per window
+    }),
+  ],
+});
+
+class OptimizedRateLimiter {
+  private otpStore = new Map<string, OTPEntry>();
   private readonly minInterval: number; // Minimum time between requests
 
-  constructor(
-    maxRequests = 5, // Max 5 OTP requests
-    windowMs = 15 * 60 * 1000, // 15 minutes window
-    minInterval = 60 * 1000 // 1 minute between requests
-  ) {
-    this.maxRequests = maxRequests;
-    this.windowMs = windowMs;
+  constructor(minInterval = 60 * 1000) {
+    // 1 minute between requests
     this.minInterval = minInterval;
 
-    // Cleanup expired entries every 5 minutes
-    setInterval(() => this.cleanup(), 5 * 60 * 1000);
+    // Cleanup expired entries every 10 minutes (less frequent)
+    setInterval(() => this.cleanup(), 10 * 60 * 1000);
   }
 
-  // Check if request is allowed
-  isAllowed(identifier: string): {
+  // Check if request is allowed using Arcjet + custom logic
+  async isAllowed(
+    email: string,
+    request?: Request
+  ): Promise<{
     allowed: boolean;
     retryAfter?: number;
     message?: string;
-  } {
+    arcjetDecision?: ArcjetDecision;
+  }> {
     const now = Date.now();
-    const entry = this.store.get(identifier);
 
-    if (!entry) {
-      // First request
-      this.store.set(identifier, {
-        count: 1,
-        resetTime: now + this.windowMs,
-        lastRequest: now,
-      });
-      return { allowed: true };
+    // First check Arcjet rate limiting
+    if (request) {
+      const decision = await otpArcjet.protect(request, { email });
+
+      if (decision.isDenied()) {
+        return {
+          allowed: false,
+          retryAfter: 900, // 15 minutes in seconds
+          message: "Terlalu banyak permintaan OTP. Coba lagi dalam 15 menit",
+          arcjetDecision: decision,
+        };
+      }
     }
 
-    // Check if window has expired
-    if (now >= entry.resetTime) {
-      // Reset the window
-      this.store.set(identifier, {
-        count: 1,
-        resetTime: now + this.windowMs,
-        lastRequest: now,
-      });
-      return { allowed: true };
-    }
+    // Then check minimum interval (custom logic)
+    const entry = this.otpStore.get(email);
 
-    // Check minimum interval between requests
-    const timeSinceLastRequest = now - entry.lastRequest;
-    if (timeSinceLastRequest < this.minInterval) {
-      const retryAfter = Math.ceil(
-        (this.minInterval - timeSinceLastRequest) / 1000
-      );
-      return {
-        allowed: false,
-        retryAfter,
-        message: `Tunggu ${retryAfter} detik sebelum meminta OTP lagi`,
-      };
-    }
-
-    // Check if max requests exceeded
-    if (entry.count >= this.maxRequests) {
-      const retryAfter = Math.ceil((entry.resetTime - now) / 1000);
-      return {
-        allowed: false,
-        retryAfter,
-        message: `Terlalu banyak permintaan OTP. Coba lagi dalam ${Math.ceil(
-          retryAfter / 60
-        )} menit`,
-      };
+    if (entry) {
+      const timeSinceLastRequest = now - entry.lastRequest;
+      if (timeSinceLastRequest < this.minInterval) {
+        const retryAfter = Math.ceil(
+          (this.minInterval - timeSinceLastRequest) / 1000
+        );
+        return {
+          allowed: false,
+          retryAfter,
+          message: `Tunggu ${retryAfter} detik sebelum meminta OTP lagi`,
+        };
+      }
     }
 
     // Update entry
-    entry.count++;
-    entry.lastRequest = now;
-    this.store.set(identifier, entry);
+    this.otpStore.set(email, {
+      lastRequest: now,
+      attempts: (entry?.attempts || 0) + 1,
+    });
 
     return { allowed: true };
   }
 
-  // Get remaining attempts
-  getRemainingAttempts(identifier: string): number {
-    const entry = this.store.get(identifier);
-    if (!entry || Date.now() >= entry.resetTime) {
-      return this.maxRequests;
+  // Get remaining attempts (simplified for OTP)
+  getRemainingAttempts(email: string): number {
+    const entry = this.otpStore.get(email);
+    if (!entry) {
+      return 5; // Max attempts from Arcjet config
     }
-    return Math.max(0, this.maxRequests - entry.count);
+    return Math.max(0, 5 - entry.attempts);
   }
 
-  // Get time until reset
-  getTimeUntilReset(identifier: string): number {
-    const entry = this.store.get(identifier);
-    if (!entry || Date.now() >= entry.resetTime) {
+  // Get time until next allowed request
+  getTimeUntilNextRequest(email: string): number {
+    const entry = this.otpStore.get(email);
+    if (!entry) {
       return 0;
     }
-    return Math.max(0, entry.resetTime - Date.now());
+    const timeSinceLastRequest = Date.now() - entry.lastRequest;
+    return Math.max(0, this.minInterval - timeSinceLastRequest);
   }
 
-  // Cleanup expired entries
+  // Cleanup expired entries (simplified)
   private cleanup() {
     const now = Date.now();
-    for (const [key, entry] of this.store.entries()) {
-      if (now >= entry.resetTime) {
-        this.store.delete(key);
+    const maxAge = 15 * 60 * 1000; // 15 minutes
+
+    for (const [key, entry] of this.otpStore.entries()) {
+      if (now - entry.lastRequest > maxAge) {
+        this.otpStore.delete(key);
       }
     }
   }
 
-  // Reset rate limit for specific identifier (useful for testing)
-  reset(identifier: string) {
-    this.store.delete(identifier);
+  // Reset rate limit for specific email (useful for testing)
+  reset(email: string) {
+    this.otpStore.delete(email);
   }
 
-  // Get current stats for identifier
-  getStats(identifier: string) {
-    const entry = this.store.get(identifier);
+  // Get current stats for email
+  getStats(email: string) {
+    const entry = this.otpStore.get(email);
     if (!entry) {
       return {
-        requests: 0,
-        remaining: this.maxRequests,
-        resetTime: null,
+        attempts: 0,
+        remaining: 5,
         lastRequest: null,
+        nextAllowedRequest: null,
       };
     }
 
+    const nextAllowedTime = entry.lastRequest + this.minInterval;
     const now = Date.now();
-    if (now >= entry.resetTime) {
-      return {
-        requests: 0,
-        remaining: this.maxRequests,
-        resetTime: null,
-        lastRequest: null,
-      };
-    }
 
     return {
-      requests: entry.count,
-      remaining: Math.max(0, this.maxRequests - entry.count),
-      resetTime: new Date(entry.resetTime),
+      attempts: entry.attempts,
+      remaining: Math.max(0, 5 - entry.attempts),
       lastRequest: new Date(entry.lastRequest),
+      nextAllowedRequest:
+        now < nextAllowedTime ? new Date(nextAllowedTime) : null,
     };
   }
 }
 
 // Export singleton instance
-export const otpRateLimiter = new RateLimiter();
+export const otpRateLimiter = new OptimizedRateLimiter();
 
-// Helper function to create rate limit key
+// Export Arcjet instance for external use
+export { otpArcjet };
+
+// Helper function to create rate limit key (kept for backward compatibility)
 export function createRateLimitKey(
   email: string,
   type: "otp" | "login" = "otp"
 ): string {
   return `${type}:${email.toLowerCase()}`;
+}
+
+// New helper function for Arcjet-based rate limiting
+export async function checkOTPRateLimit(
+  email: string,
+  request?: Request
+): Promise<{
+  allowed: boolean;
+  retryAfter?: number;
+  message?: string;
+}> {
+  return await otpRateLimiter.isAllowed(email, request);
 }

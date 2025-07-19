@@ -6,7 +6,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import prisma from "./db";
 import { env } from "./env";
 import { sendOTPEmail } from "./email";
-import { otpRateLimiter, createRateLimitKey } from "./rate-limit";
+import { otpRateLimiter, checkOTPRateLimit } from "./rate-limit";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -34,18 +34,34 @@ export const auth = betterAuth({
   ],
 });
 
-// Helper functions for rate limiting
+// Helper functions for rate limiting (updated for Arcjet integration)
 export function getOTPRateLimit(email: string) {
-  const rateLimitKey = createRateLimitKey(email);
-  return otpRateLimiter.getStats(rateLimitKey);
+  return otpRateLimiter.getStats(email);
 }
 
-export function checkOTPRateLimit(email: string) {
-  const rateLimitKey = createRateLimitKey(email);
-  return otpRateLimiter.isAllowed(rateLimitKey);
+export async function checkOTPRateLimitWithRequest(
+  email: string,
+  request?: Request
+) {
+  return await checkOTPRateLimit(email, request);
 }
 
 export function resetOTPRateLimit(email: string) {
-  const rateLimitKey = createRateLimitKey(email);
-  otpRateLimiter.reset(rateLimitKey);
+  otpRateLimiter.reset(email);
+}
+
+// Backward compatibility - sync version without Arcjet
+export function checkOTPRateLimitSync(email: string) {
+  // For backward compatibility, just check minimum interval
+  const timeUntilNext = otpRateLimiter.getTimeUntilNextRequest(email);
+  if (timeUntilNext > 0) {
+    return {
+      allowed: false,
+      retryAfter: Math.ceil(timeUntilNext / 1000),
+      message: `Tunggu ${Math.ceil(
+        timeUntilNext / 1000
+      )} detik sebelum meminta OTP lagi`,
+    };
+  }
+  return { allowed: true };
 }
