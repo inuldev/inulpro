@@ -1,8 +1,8 @@
 import Stripe from "stripe";
 import { headers } from "next/headers";
 
-import { env } from "@/lib/env";
 import prisma from "@/lib/db";
+import { env } from "@/lib/env";
 import { stripe } from "@/lib/stripe";
 
 export async function POST(req: Request) {

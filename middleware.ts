@@ -8,9 +8,8 @@ const aj = arcjet({
   key: env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
   rules: [
     detectBot({
-      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only. See
-      // https://docs.arcjet.com/bot-detection/rules#mode
-      // Allow all bots except the following categories. See the full list at
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only.
+      // Block all bots except the following categories. See the full list at
       // https://arcjet.com/bot-list
       allow: [
         "CATEGORY:SEARCH_ENGINE", // Google, Bing, etc

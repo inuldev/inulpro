@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import Link from "next/link";
@@ -12,7 +13,7 @@ export default function PaymentSuccessfull() {
   const triggerConfetti = useConfetti();
 
   useEffect(() => {
-    triggerConfetti(); // eslint-disable-next-line react-hooks/exhaustive-deps
+    triggerConfetti();
   }, []);
 
   return (

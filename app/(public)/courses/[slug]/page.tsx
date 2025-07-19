@@ -17,6 +17,7 @@ import { RenderDescription } from "@/components/rich-text-editor/RenderDescripti
 
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Collapsible,
@@ -25,7 +26,6 @@ import {
 } from "@/components/ui/collapsible";
 
 import { EnrollmentButton } from "./_components/EnrollmentButton";
-import { buttonVariants } from "@/components/ui/button";
 
 type Params = Promise<{ slug: string }>;
 
