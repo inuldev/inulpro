@@ -6,6 +6,8 @@ import { env } from "@/lib/env";
 import { stripe } from "@/lib/stripe";
 
 export async function POST(req: Request) {
+  console.log("🔔 Webhook received");
+
   const body = await req.text();
   const headersList = await headers();
   const signature = headersList.get("Stripe-Signature") as string;
@@ -18,42 +20,90 @@ export async function POST(req: Request) {
       signature,
       env.STRIPE_WEBHOOK_SECRET
     );
-  } catch {
+    console.log("✅ Webhook signature verified, event type:", event.type);
+  } catch (error) {
+    console.error("❌ Webhook signature verification failed:", error);
     return new Response("Webhook error", { status: 400 });
   }
 
-  const session = event.data.object as Stripe.Checkout.Session;
+  try {
+    if (event.type === "checkout.session.completed") {
+      console.log("💳 Processing checkout.session.completed");
 
-  if (event.type === "checkout.session.completed") {
-    const courseId = session.metadata?.courseId;
-    const customerId = session.customer as string;
+      const session = event.data.object as Stripe.Checkout.Session;
+      const courseId = session.metadata?.courseId;
+      const enrollmentId = session.metadata?.enrollmentId;
+      const customerId = session.customer as string;
 
-    if (!courseId) {
-      throw new Error("Course id not found...");
+      console.log("📋 Session metadata:", {
+        courseId,
+        enrollmentId,
+        customerId,
+        amount: session.amount_total,
+      });
+
+      if (!courseId) {
+        console.error("❌ Course ID not found in metadata");
+        return new Response("Course ID missing", { status: 400 });
+      }
+
+      if (!enrollmentId) {
+        console.error("❌ Enrollment ID not found in metadata");
+        return new Response("Enrollment ID missing", { status: 400 });
+      }
+
+      const user = await prisma.user.findUnique({
+        where: {
+          stripeCustomerId: customerId,
+        },
+      });
+
+      if (!user) {
+        console.error("❌ User not found with Stripe customer ID:", customerId);
+        return new Response("User not found", { status: 400 });
+      }
+
+      console.log("👤 User found:", user.email);
+
+      // Verify enrollment exists
+      const existingEnrollment = await prisma.enrollment.findUnique({
+        where: {
+          id: enrollmentId,
+        },
+      });
+
+      if (!existingEnrollment) {
+        console.error("❌ Enrollment not found:", enrollmentId);
+        return new Response("Enrollment not found", { status: 400 });
+      }
+
+      console.log(
+        "📚 Enrollment found, current status:",
+        existingEnrollment.status
+      );
+
+      const updatedEnrollment = await prisma.enrollment.update({
+        where: {
+          id: enrollmentId,
+        },
+        data: {
+          status: "Completed",
+          amount: session.amount_total as number,
+        },
+      });
+
+      console.log("✅ Enrollment updated successfully:", {
+        id: updatedEnrollment.id,
+        status: updatedEnrollment.status,
+        amount: updatedEnrollment.amount,
+      });
+    } else {
+      console.log("ℹ️ Unhandled event type:", event.type);
     }
 
-    const user = await prisma.user.findUnique({
-      where: {
-        stripeCustomerId: customerId,
-      },
-    });
-
-    if (!user) {
-      throw new Error("User not found...");
-    }
-
-    await prisma.enrollment.update({
-      where: {
-        id: session.metadata?.enrollmentId as string,
-      },
-      data: {
-        userId: user.id,
-        courseId: courseId,
-        amount: session.amount_total as number,
-        status: "Completed",
-      },
-    });
+    return new Response("Webhook processed successfully", { status: 200 });
+  } catch (error) {
+    console.error("❌ Error processing webhook:", error);
+    return new Response("Internal server error", { status: 500 });
   }
-
-  return new Response("Webhook received", { status: 200 });
 }

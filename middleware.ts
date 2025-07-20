@@ -33,8 +33,10 @@ async function authMiddleware(request: NextRequest) {
 
 export const config = {
   // matcher tells Next.js which routes to run the middleware on.
-  // This runs the middleware on all routes except for static assets.
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/auth).*)"],
+  // This runs the middleware on all routes except for static assets and webhook endpoints.
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|api/auth|api/webhook).*)",
+  ],
 };
 
 // Pass any existing middleware with the optional existingMiddleware prop
