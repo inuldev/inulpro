@@ -2,7 +2,7 @@ import nodemailer from "nodemailer";
 import SMTPTransport from "nodemailer/lib/smtp-transport";
 
 import { env } from "./env";
-import { otpRateLimiter, createRateLimitKey } from "./rate-limit";
+import { checkOTPRateLimit, otpRateLimiter } from "./rate-limit";
 
 // Singleton transporter instance
 let transporter: nodemailer.Transporter | null = null;
@@ -127,11 +127,32 @@ Email ini dikirim ke ${email}
 export async function sendOTPEmail(
   email: string,
   otp: string,
-  retries = 3
+  retries = 3,
+  request?: Request
 ): Promise<void> {
-  // Check rate limiting first
-  const rateLimitKey = createRateLimitKey(email);
-  const rateLimitResult = otpRateLimiter.isAllowed(rateLimitKey);
+  // Check rate limiting first using optimized rate limiter
+  let rateLimitResult;
+
+  if (request) {
+    // Use full Arcjet + custom rate limiting when request is available
+    rateLimitResult = await checkOTPRateLimit(email, request);
+  } else {
+    // Fallback to minimum interval check only (for Better-Auth integration)
+    const timeUntilNext = otpRateLimiter.getTimeUntilNextRequest(email);
+    if (timeUntilNext > 0) {
+      rateLimitResult = {
+        allowed: false,
+        retryAfter: Math.ceil(timeUntilNext / 1000),
+        message: `Tunggu ${Math.ceil(
+          timeUntilNext / 1000
+        )} detik sebelum meminta OTP lagi`,
+      };
+    } else {
+      // Update the store for minimum interval tracking
+      await otpRateLimiter.isAllowed(email);
+      rateLimitResult = { allowed: true };
+    }
+  }
 
   if (!rateLimitResult.allowed) {
     throw new Error(rateLimitResult.message || "Rate limit exceeded");
