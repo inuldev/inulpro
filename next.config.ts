@@ -14,6 +14,9 @@ const nextConfig: NextConfig = {
   // Optimasi output
   output: "standalone",
 
+  // Optimasi performance
+  swcMinify: true,
+
   // Optimasi images
   images: {
     formats: ["image/webp", "image/avif"],
