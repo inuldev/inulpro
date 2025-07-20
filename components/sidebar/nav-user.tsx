@@ -115,18 +115,37 @@ export function NavUser() {
                   Homepage
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/admin">
-                  <IconDashboard />
-                  Dashboard
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/admin/courses">
-                  <IconBrandYoutube />
-                  Courses
-                </Link>
-              </DropdownMenuItem>
+              {session?.user.role === "admin" ? (
+                <>
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin">
+                      <IconDashboard />
+                      Admin Dashboard
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin/courses">
+                      <IconBrandYoutube />
+                      Manage Courses
+                    </Link>
+                  </DropdownMenuItem>
+                </>
+              ) : (
+                <>
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard">
+                      <IconDashboard />
+                      My Dashboard
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/courses">
+                      <IconBrandYoutube />
+                      My Courses
+                    </Link>
+                  </DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut}>
