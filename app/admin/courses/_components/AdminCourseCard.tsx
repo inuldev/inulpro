@@ -12,6 +12,7 @@ import {
 
 import { getS3PublicUrl } from "@/lib/s3-utils";
 import { AdminCourseType } from "@/app/data/admin/admin-get-courses";
+import { RenderContent } from "@/components/rich-text-editor/RenderContent";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
@@ -79,9 +80,12 @@ export function AdminCourseCard({ data }: iAppProps) {
         >
           {data.title}
         </Link>
-        <p className="text-sm text-muted-foreground line-clamp-2 leading-tight">
-          {data.smallDescription}
-        </p>
+        <div className="text-sm text-muted-foreground line-clamp-2 leading-tight">
+          <RenderContent
+            content={data.smallDescription}
+            fallbackClassName="text-sm text-muted-foreground leading-tight"
+          />
+        </div>
 
         <div className="mt-4 flex items-center gap-x-5">
           <div className="flex items-center gap-x-2">

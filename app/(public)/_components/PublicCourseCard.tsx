@@ -4,6 +4,7 @@ import { School2Icon, TimerIcon } from "lucide-react";
 
 import { getS3PublicUrl } from "@/lib/s3-utils";
 import { PublicCourseType } from "@/app/data/course/get-all-courses";
+import { RenderContent } from "@/components/rich-text-editor/RenderContent";
 
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -36,9 +37,12 @@ export function PublicCourseCard({ data }: iAppProps) {
         >
           {data.title}
         </Link>
-        <p className="text-sm text-muted-foreground line-clamp-2 leading-tight mt-2">
-          {data.smallDescription}
-        </p>
+        <div className="text-sm text-muted-foreground line-clamp-2 leading-tight mt-2">
+          <RenderContent
+            content={data.smallDescription}
+            fallbackClassName="text-sm text-muted-foreground leading-tight"
+          />
+        </div>
 
         <div className="mt-4 flex items-center gap-x-5">
           <div className="flex items-center gap-x-2">

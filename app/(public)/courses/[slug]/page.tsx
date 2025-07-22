@@ -13,7 +13,7 @@ import {
 import { getS3PublicUrl } from "@/lib/s3-utils";
 import { getIndividualCourse } from "@/app/data/course/get-course";
 import { checkIfCourseBought } from "@/app/data/user/user-enrolled";
-import { RenderDescription } from "@/components/rich-text-editor/RenderDescription";
+import { RenderContent } from "@/components/rich-text-editor/RenderContent";
 
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -54,9 +54,12 @@ export default async function SlugPage({ params }: { params: Params }) {
             <h1 className="text-4xl font-bold tracking-tight">
               {course.title}
             </h1>
-            <p className="text-lg text-muted-foreground leading-relaxed line-clamp-2">
-              {course.smallDescription}
-            </p>
+            <div className="text-lg text-muted-foreground leading-relaxed line-clamp-2">
+              <RenderContent
+                content={course.smallDescription}
+                fallbackClassName="text-lg text-muted-foreground leading-relaxed"
+              />
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-3">
@@ -80,7 +83,7 @@ export default async function SlugPage({ params }: { params: Params }) {
               Course Description
             </h2>
 
-            <RenderDescription json={JSON.parse(course.description)} />
+            <RenderContent content={course.description} />
           </div>
         </div>
 

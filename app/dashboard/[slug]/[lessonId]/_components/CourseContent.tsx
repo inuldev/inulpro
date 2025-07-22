@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { getS3PublicUrl } from "@/lib/s3-utils";
 import { useConfetti } from "@/hooks/use-confetti";
 import { LessonContentType } from "@/app/data/course/get-lesson-content";
-import { RenderDescription } from "@/components/rich-text-editor/RenderDescription";
+import { RenderContent } from "@/components/rich-text-editor/RenderContent";
 
 import { markLessonComplete } from "../actions";
 
@@ -105,9 +105,7 @@ export function CourseContent({ data }: iAppProps) {
           {data.title}
         </h1>
 
-        {data.description && (
-          <RenderDescription json={JSON.parse(data.description)} />
-        )}
+        {data.description && <RenderContent content={data.description} />}
       </div>
     </div>
   );

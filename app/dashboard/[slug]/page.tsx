@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { EmptyState } from "@/components/general/EmptyState";
+import { RenderContent } from "@/components/rich-text-editor/RenderContent";
 import { getCourseSidebarData } from "@/app/data/course/get-course-sidebar-data";
 
 interface iAppProps {
@@ -84,9 +85,10 @@ export default async function CourseOverviewPage({ params }: iAppProps) {
         {course.course.smallDescription && (
           <div className="bg-card border rounded-lg p-6">
             <h2 className="text-lg font-semibold mb-3">About This Course</h2>
-            <p className="text-muted-foreground leading-relaxed">
-              {course.course.smallDescription}
-            </p>
+            <RenderContent
+              content={course.course.smallDescription}
+              fallbackClassName="text-muted-foreground leading-relaxed"
+            />
           </div>
         )}
 
@@ -177,17 +179,16 @@ export default async function CourseOverviewPage({ params }: iAppProps) {
         course.course.description !== course.course.smallDescription && (
           <div className="bg-card border rounded-lg p-6">
             <h2 className="text-xl font-semibold mb-4">Course Details</h2>
-            <div className="prose prose-sm max-w-none text-muted-foreground">
-              <p className="whitespace-pre-wrap leading-relaxed">
-                {course.course.description}
-              </p>
-            </div>
+            <RenderContent
+              content={course.course.description}
+              className="max-w-none"
+            />
           </div>
         )}
 
       {/* Course Chapters Overview */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Course Content</h2>
+        <h2 className="text-xl font-semibold px-6">Course Content</h2>
         <div className="space-y-3">
           {course.course.chapters.map((chapter) => {
             const chapterCompletedLessons = chapter.lessons.filter((lesson) =>
