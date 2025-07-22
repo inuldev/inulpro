@@ -15,11 +15,20 @@ export async function getCourseSidebarData(slug: string) {
     select: {
       id: true,
       title: true,
+      description: true,
+      smallDescription: true,
       fileKey: true,
       duration: true,
       level: true,
       category: true,
       slug: true,
+      createdAt: true,
+      user: {
+        select: {
+          name: true,
+          email: true,
+        },
+      },
       chapters: {
         orderBy: {
           position: "asc",
@@ -73,6 +82,7 @@ export async function getCourseSidebarData(slug: string) {
 
   return {
     course,
+    enrollment,
   };
 }
 
